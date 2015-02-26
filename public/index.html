@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+    body {
+        text-aling:center;
+        cursor: none;
+        cursor: crosshair;
+
+    }
+
+
+    #canvas {
+        background-position:0px 0px;
+        background-repeat:no-repeat;
+        width:500px;
+        display:inline-block;
+        background-size: 1000px 1000px;
+        background-image:url('imgs/map.jpg');
+        height:500px;}
+        </style>
+    <meta charset="UTF-8">
+    <title>Boolean Operations</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/jquery-2.1.0.min.js"></script>
+    <script type="text/javascript" src="js/paper-full.js"></script>
+    <img id="mona" style="display:none;height:100px; width:100px;" src="imgs/you.png"/>
+
+    <img id="oman" style="display:none;height:100px; width:100px;" src="imgs/other.png"/>
+
+    <script id="test" type="text/paperscript" canvas="canvas" >
+
+    function background(x,y){
+        var canvas = $("#canvas");
+        var pos=canvas.css('background-position').split(" ");
+        
+        pos[0]=parseFloat(pos[0]);
+        pos[1]=parseFloat(pos[1]);
+
+
+       if(pos[0]+x>-500 && pos[0]+x<=0)
+            pos[0]+=x;
+       if(pos[1]+y>-500 && pos[1]+y<=0)
+            pos[1]+=y;
+        
+       
+        
+        canvas.css('background-position',Math.round(Number(pos[0]))+'px '+Math.round(Number(pos[1]))+'px');
+        
+        
+    }
+
+function collisionPlayers(a,key){
+    
+    ///*
+
+    if(key=='d'){
+        for (var key in clients) {
+            if(a.x+20+step >= clients[key].position.x && a.x+20+step <= clients[key].position.x 
+                && (a.y + 20 <= clients[key].position.y+40 && a.y + 20 >= clients[key].position.y-10))
+                return false;
+        
+        }
+    }else if(key=='a'){
+       for (var key in clients) {
+            if(a.x-20+step >= clients[key].position.x && a.x-20+step <= clients[key].position.x +10
+                && (a.y +20 <= clients[key].position.y+40 && a.y +20 >= clients[key].position.y-10))
+                return false;
+        
+        }
+    }else if(key=='w'){
+        for (var key in clients) {
+            if(a.y-step-10 >= clients[key].position.y && a.y-step-10 <= clients[key].position.y +10
+                && (a.x  <= clients[key].position.x+30 && a.x >= clients[key].position.x-30))
+                return false;
+        
+        }
+    }else if(key=='s'){
+        for (var key in clients) {
+            if(a.y+20+step >= clients[key].position.y && a.y+20+step <= clients[key].position.y+20 
+                && (a.x <= clients[key].position.x+30 && a.x  >= clients[key].position.x-30))
+                return false;
+        
+        }
+
+    }
+
+    //*/
+    return true;
+
+}
+
+function movePlayer(raster){
+    var p = raster.position;
+    
+    p.x = Math.round(Number(p.x));
+    p.y = Math.round(Number(p.y));
+
+    // "A" button pressed ("LEFT")
+    if(Key.isDown('a') && p.x>20) {
+
+        if(collisionPlayers(p,'a')){
+            raster.rotate(-3);
+
+            if(p.x>250 && p.x<=750){
+                view.scrollBy({x:-step,y:0});
+                background(step,0);
+            }
+        
+            p.x -= step;   
+
+            socket.emit('move',{left: true});
+        }
+        
+     }
+
+    // "D" button pressed ("RIGHT")
+    if(Key.isDown('d') && p.x<980) {
+
+        if(collisionPlayers(p,'d')){
+        
+        
+            raster.rotate(3);
+            if(p.x>=250 && p.x<750){
+                view.scrollBy({x:step,y:0});
+                background(-step,0); 
+            }
+            
+            p.x += step;
+
+            socket.emit('move',{right:true});  
+        }
+
+    }
+
+    // "W" button pressed ("UP")
+    if(Key.isDown('w') &&  p.y>20) {
+       
+       if(collisionPlayers(p,'w')){
+
+           if(p.y>250 && p.y<750){
+                view.scrollBy({x:0,y:-step});
+                background(0,step);
+            }
+            p.y -= step;
+
+            socket.emit('move',{up: true});
+        }
+
+    }
+
+    // "S" button pressed ("DOWN")
+    if(Key.isDown('s') && p.y<980) {
+    
+        if(collisionPlayers(p,'s')){
+
+            if(p.y>250 && p.y<750){
+                view.scrollBy({x:0,y:step});
+                background(0,-step);
+            }
+            
+            p.y += step;
+
+            socket.emit('move',{down: true});
+        }
+
+    }
+    // Very important.
+    p.x = Math.round(Number(p.x));
+    p.y = Math.round(Number(p.y));
+
+    if(p.x>250 && p.x < 750 & p.y>250 && p.y<750){
+        view.center = p;
+        text.fillColor = "white";
+    }else{
+        text.fillColor = "red";
+    }
+    
+   
+    text.position = {x:raster.position.x, y:raster.position.y-30};
+    text.content = raster.position.x + ":" + raster.position.y
+
+
+}
+function moveFriend(data){
+
+    if(data.left == true) {
+        clients[data.id].position.x -= step;   
+        clients[data.id].rotate(-3);
+
+     }
+
+    if(data.right == true) {
+        clients[data.id].position.x += step;
+        clients[data.id].rotate(3);
+
+    }
+
+    if(data.up == true) {
+        clients[data.id].position.y -= step;
+    }
+
+    if(data.down == true) {
+        clients[data.id].position.y += step;
+    }
+        clients[data.id].position.y = Math.round(Number(clients[data.id].position.y));
+        clients[data.id].position.x = Math.round(Number(clients[data.id].position.x));
+        coords[data.id].position = {x:clients[data.id].position.x, y:clients[data.id].position.y-30};
+        coords[data.id].content = clients[data.id].position.x + ":" + clients[data.id].position.y;
+
+}
+    var clients = [];
+    var coords = [];
+
+socket= io.connect('127.0.0.1',{'force new connection':true});
+socket.on('hi',function(data){
+        clients[data.id]= new Raster('oman');
+        clients[data.id].position.x = data.position.x;
+        clients[data.id].position.y = data.position.y;
+        //console.log(data.position);
+        clients[data.id].scale(0.2);
+        coords[data.id] = new PointText({  point: view.center,
+            justification: 'center',
+            fontSize: 14,
+            fillColor: 'white'
+        });
+      //  console.log('Cześć '+data.id+"!")
+      clients[data.id].sendToBack();
+
+});
+socket.on('you',function(data){
+   // console.log('Nazywam się '+data.id)
+});
+socket.on('logout',function(data){
+    clients[data.id].remove();
+    coords[data.id].remove();
+   // console.log('bye bye '+data.id);
+});
+socket.on('new',function(data){
+   // console.log(raster.position);
+    socket.emit('hi',{position: {x: raster.position.x,y:raster.position.y},to: data.id});
+    
+    clients[data.id]= new Raster('oman');
+    
+
+    if(typeof data.position !== undefined ){
+        clients[data.id].position = new Point([500,500]);
+
+    }else {
+        clients[data.id].position = data.position;
+    }
+
+    clients[data.id].scale(0.2);
+    coords[data.id] = new PointText({  point: view.center,
+            justification: 'center',
+            fontSize: 14,
+            fillColor: 'white'
+        });
+    console.log('Dzieki serwer! Widze nowego!' +data.id);
+    clients[data.id].sendToBack();
+
+});
+socket.on('move',function(data){
+
+    moveFriend(data);
+});
+      var bullets = Array();
+
+// Create a raster item using the image tag with id='mona'
+var raster = new Raster('mona');
+//var r2 = new Raster('mona');
+var text = new PointText({  point: view.center,
+    justification: 'center',
+    fontSize: 14,
+    fillColor: 'white'
+});
+
+// Move the raster to the center of the view
+raster.position = new Point([500,500]);
+view.scrollBy({x:250,y:250});
+background(-250,-250)
+//r2.position = view.center + {x: -250,y:100};
+// Scale the raster by 50%
+raster.scale(0.2);
+//r2.scale(0.2);
+
+
+        var path = new Path();
+
+// Rotate the raster by 45 degrees:
+var destination = new Point(0.5,0) * view.size;
+i=0;
+var vector;
+var move = false;
+var next= false;
+setInterval(function(){next=true;},200)
+console.log(raster.width);
+
+var previous = {};
+previous.x = null;
+previous.y = null;
+
+function onMouseMove(event){
+/*   if(previous.x == null || previous.y == null){
+    previous.x = event.x; 
+    previous.y = event.y;
+    return;
+    }
+
+
+
+   //raster.rotate();
+  // if(previous.x>)
+   //var degree = Math.round(Math.atan2(event.point.x-raster.position.x,event.point.y-raster.position.y) * 180/Math.PI);
+   //degree= (degree < 0 ? -degree+180:180-degree);
+   
+   //degree-=previous;
+   //raster.rotate(raster.rotation-degree);
+   //console.log(raster.rotation);
+   //raster.rotate(degree);
+   //console.log(degree);
+  // previous = degree;
+   //raster.rotate(raster.rotation-degree);*/
+//console.log(-(view.center.x-event.point.x-250))
+  // view.position = event.point;
+}
+
+function onFrame(event) {
+
+//  bullets= bullets.slice(2,1);
+//raster.rotate(1);
+//console.log(raster.rotation)
+//if(raster.width < parseInt(Math.sqrt((Math.pow(raster.position.x-r2.position.x,2)+Math.pow(raster.position.y-r2.position.y,2))))*view.size){
+
+//console.log('oks');
+//}
+//var vector = destination - raster.position;
+    step = 5;
+    // We add 1/30th of the vector to the position property
+    // of the text item, to move it in the direction of the
+    // destination point:
+  //  raster.position += vector ;
+    
+    // Set the content of the text item to be the length of the vector.
+    // I.e. the distance it has to travel still:
+    //raster.content = Math.round(vector.length);
+    
+    // If the distance between the path and the destination is less
+    // than 5, we define a new random point in the view to move the
+    // path to:
+for(var i =0;i<bullets.length;i++){
+                
+                bullets[i].position.y += 30;
+                
+                if(bullets[i].position.y>500)
+                bullets[i].remove();
+            } 
+    
+movePlayer(raster);
+
+
+    if(Key.isDown('f')){
+        if(next == true ){
+      var path = new Path();
+     // Give the stroke a color
+    path.strokeColor = 'white';
+    var start = raster.position;
+    // Move to start and draw a line from there
+    path.moveTo(start);
+    // Note the plus operator on Point objects.
+    // PaperScript does that for us, and much more!
+    path.lineTo(start + [ 0, 20 ]);
+    //path.destination = new Point(0,1) * view.size;
+    bullets[bullets.length] = path;
+    next=false;
+    }
+
+        }
+
+}
+
+
+    </script>
+</head>
+<body>
+    <canvas id="canvas" keepalive="true"></canvas>
+        <canvas id="map"></canvas>
+
+</body>
+</html>
