@@ -25,11 +25,12 @@
     <script src="js/jquery-2.1.0.min.js"></script>
     <script type="text/javascript" src="js/paper-full.js"></script>
     <img id="mona" style="display:none;height:100px; width:100px;" src="imgs/you.png"/>
-
+    <img id="dmg" style="display:none;height:100px; width:100px;" src="imgs/damage.png"/>
     <img id="oman" style="display:none;height:100px; width:100px;" src="imgs/other.png"/>
 
     <script id="test" type="text/paperscript" canvas="canvas" >
 
+var crossHair = {x: 0 , y:0}
     function background(x,y){
         var canvas = $("#canvas");
         var pos=canvas.css('background-position').split(" ");
@@ -50,10 +51,36 @@
         
     }
 
+function bulletCollision(a,k){
+    for (var key in clients) {
+        if((k != key )&&clients[key].position.x-20<=a.x && clients[key].position.x+20 >=a.x &&
+            clients[key].position.y-20<=a.y && clients[key].position.y+20 >=a.y){
+            return key;
+        }
+    }
+
+    if((k != 'own' )&& raster.position.x-20<=a.x && raster.position.x+20 >=a.x &&
+            raster.position.y-20<=a.y && raster.position.y+20 >=a.y){
+            return 'you';
+    }
+    return false;
+}
+
+function takeBullet(key){
+    if(key!='you'){
+        clients[key].setImage(document.getElementById('dmg'));
+        setTimeout(function(){
+            clients[key].setImage(document.getElementById('oman'));
+        },100);
+    }else{
+        raster.setImage(document.getElementById('dmg'));
+        setTimeout(function(){
+            raster.setImage(document.getElementById('mona'));
+        },100);
+    }
+}
 function collisionPlayers(a,key){
     
-    ///*
-
     if(key=='d'){
         for (var key in clients) {
             if(a.x+20+step >= clients[key].position.x && a.x+20+step <= clients[key].position.x 
@@ -90,17 +117,26 @@ function collisionPlayers(a,key){
 
 }
 
+function calculateFinal(an,a1,r){
+    if(an==0) 
+        an==-1000;
+
+    var r = 1-((a1+an)/r); // ceil moze psuc kalkulacje 
+    return (r<0 ? -r:r);
+}
+
 function movePlayer(raster){
     var p = raster.position;
     
     p.x = Math.round(Number(p.x));
     p.y = Math.round(Number(p.y));
-
+    var keyPressed = false;
     // "A" button pressed ("LEFT")
     if(Key.isDown('a') && p.x>20) {
+        keyPressed = true;
 
         if(collisionPlayers(p,'a')){
-            raster.rotate(-3);
+            //raster.rotate(-3);
 
             if(p.x>250 && p.x<=750){
                 view.scrollBy({x:-step,y:0});
@@ -116,11 +152,11 @@ function movePlayer(raster){
 
     // "D" button pressed ("RIGHT")
     if(Key.isDown('d') && p.x<980) {
-
+        keyPressed = true;
         if(collisionPlayers(p,'d')){
         
         
-            raster.rotate(3);
+          //  raster.rotate(3);
             if(p.x>=250 && p.x<750){
                 view.scrollBy({x:step,y:0});
                 background(-step,0); 
@@ -135,7 +171,7 @@ function movePlayer(raster){
 
     // "W" button pressed ("UP")
     if(Key.isDown('w') &&  p.y>20) {
-       
+        keyPressed = true;
        if(collisionPlayers(p,'w')){
 
            if(p.y>250 && p.y<750){
@@ -151,7 +187,7 @@ function movePlayer(raster){
 
     // "S" button pressed ("DOWN")
     if(Key.isDown('s') && p.y<980) {
-    
+        keyPressed = true;
         if(collisionPlayers(p,'s')){
 
             if(p.y>250 && p.y<750){
@@ -179,6 +215,13 @@ function movePlayer(raster){
    
     text.position = {x:raster.position.x, y:raster.position.y-30};
     text.content = raster.position.x + ":" + raster.position.y
+    if(keyPressed==true){
+        crossHair = view.center+mousePosition;
+
+         var degree = Math.round(Math.atan2(crossHair.x-raster.position.x,crossHair.y-raster.position.y) * 180/Math.PI);
+        raster.setRotation(-degree);
+        socket.emit('sight',{rotation:-degree});
+    }
 
 
 }
@@ -186,13 +229,13 @@ function moveFriend(data){
 
     if(data.left == true) {
         clients[data.id].position.x -= step;   
-        clients[data.id].rotate(-3);
+      //  clients[data.id].rotate(-3);
 
      }
 
     if(data.right == true) {
         clients[data.id].position.x += step;
-        clients[data.id].rotate(3);
+    //    clients[data.id].rotate(3);
 
     }
 
@@ -213,6 +256,34 @@ function moveFriend(data){
     var coords = [];
 
 socket= io.connect('127.0.0.1',{'force new connection':true});
+
+socket.on('sight',function(data){
+
+    clients[data.id].setRotation(data.rotation);
+})
+
+socket.on('bullet',function(data){
+    
+    var path = new Path();
+     
+    path.strokeColor = 'red';
+    var start = clients[data.id].position;
+    // Move to start and draw a line from there
+    path.moveTo(start);
+    path.strokeWidth = 3;
+    // Note the plus operator on Point objects.
+    // PaperScript does that for us, and much more!
+    path.lineTo(start + {x: 0, y: 20});
+    path.setRotation(clients[data.id].rotation);
+ 
+    path.destination = {x: Number(data.x),y:Number(data.y)}
+    //path.position = path.destination/40;
+    //console.log(path.destination)
+    path.key = data.id;
+    bullets[bullets.length] = path;
+
+})
+
 socket.on('hi',function(data){
         clients[data.id]= new Raster('oman');
         clients[data.id].position.x = data.position.x;
@@ -285,7 +356,7 @@ raster.scale(0.2);
 //r2.scale(0.2);
 
 
-        var path = new Path();
+        //var path = new Path();
 
 // Rotate the raster by 45 degrees:
 var destination = new Point(0.5,0) * view.size;
@@ -299,32 +370,22 @@ console.log(raster.width);
 var previous = {};
 previous.x = null;
 previous.y = null;
-
+var mousePosition;
 function onMouseMove(event){
-/*   if(previous.x == null || previous.y == null){
-    previous.x = event.x; 
-    previous.y = event.y;
-    return;
-    }
+mousePosition = event.point;
+   var degree = Math.round(Math.atan2(event.point.x-raster.position.x,event.point.y-raster.position.y) * 180/Math.PI);
+   raster.setRotation(-degree)
+   socket.emit('sight',{rotation:-degree});
 
+   //console.log(event.point)
+   //console.log(view.center + divPos)
+   //console.log(event.point - view.center +{x: 250,y:250});
+   mousePosition = event.point - view.center ;
+   crossHair = event.point;
+//   console.log(mousePosition)
 
-
-   //raster.rotate();
-  // if(previous.x>)
-   //var degree = Math.round(Math.atan2(event.point.x-raster.position.x,event.point.y-raster.position.y) * 180/Math.PI);
-   //degree= (degree < 0 ? -degree+180:180-degree);
-   
-   //degree-=previous;
-   //raster.rotate(raster.rotation-degree);
-   //console.log(raster.rotation);
-   //raster.rotate(degree);
-   //console.log(degree);
-  // previous = degree;
-   //raster.rotate(raster.rotation-degree);*/
-//console.log(-(view.center.x-event.point.x-250))
-  // view.position = event.point;
 }
-
+//var bullets = {x: 10, y: 10}
 function onFrame(event) {
 
 //  bullets= bullets.slice(2,1);
@@ -349,29 +410,90 @@ function onFrame(event) {
     // than 5, we define a new random point in the view to move the
     // path to:
 for(var i =0;i<bullets.length;i++){
+               /* var d,dest = bullets[i].destination;
                 
-                bullets[i].position.y += 30;
+                if(dest.x>dest.y){
+                    d = (dest.x < 0 ?  -dest.x:dest.x);
+                }else{
+                    d = (dest.y < 0 ?  -dest.y:dest.y);
+                }
+
+                if(Key.isDown('g'))
+                    console.log(dest);
+               bullets[i].position+=(dest/d)*2;
+                */
+                //console.log(bullets[i].position.x + ":" + bullets[i].position.y);
+                //console.log(bullets[i].destination.x + ":" + bullets[i].destination.y);
+                //console.log(bullets[i].destination.x +)
+
+                var tmp  = new Point([ bullets[i].destination.x/120, bullets[i].destination.y/120])
+                bullets[i].position+=tmp;
+
+                //console.log('devid'+bullets[i].destination/120)
+                //console.log(bullets[i].position.x + ":" + bullets[i].position.y+"\n");
+                /*if(typeof bullets[i].LOL !== undefined){
+                    //console.log(bullets[i].position.x+":"+bullets[i].position.y);
+                          bullets[i].destination.x = Number(bullets[i].destination.x);
+                    bullets[i].destination.y = Number(bullets[i].destination.y);
+                  
+                }*/
                 
-                if(bullets[i].position.y>500)
-                bullets[i].remove();
+
+                //bullets[i].position+=bullets[i].destination/120;
+               if(bullets[i].position.y>1000 || bullets[i].position.x>1000 || bullets[i].position.y<0 || bullets[i].position.x<0 ){
+                //console.log(bullets[i].position);
+                    bullets[i].remove();
+                    bullets.splice(i, 1);
+                }else{
+                    //
+                    var col = bulletCollision(bullets[i].position,bullets[i].key);
+                    if(col!=false){
+                        console.log(col);
+                        takeBullet(col)
+                        bullets[i].remove();
+                        bullets.splice(i, 1);
+                    }
+                }
+
+
             } 
+
     
 movePlayer(raster);
 
-
-    if(Key.isDown('f')){
+   if(Key.isDown('space')){
         if(next == true ){
-      var path = new Path();
-     // Give the stroke a color
-    path.strokeColor = 'white';
+            
+            //var t = new Point([1000,1000]);
+            //vector += t;
+    var path = new Path();
+    // Give the stroke a color
+     
+    path.strokeColor = 'red';
     var start = raster.position;
     // Move to start and draw a line from there
     path.moveTo(start);
+    path.strokeWidth = 3;
     // Note the plus operator on Point objects.
     // PaperScript does that for us, and much more!
-    path.lineTo(start + [ 0, 20 ]);
+    path.lineTo(start + {x: 0, y: 20});
+    path.setRotation(raster.rotation);
     //path.destination = new Point(0,1) * view.size;
+    var d = (crossHair - raster.position);
+    
+    if(Math.abs(d.x) > Math.abs(d.y)){
+      d/=Math.abs(d.x);
+    }else{
+      d/=Math.abs(d.y);
+    }
+    //path.destination = {x: Math.round(d.x),y:Math.round(d.y)};
+    d*=1000;
+    path.destination = d;
+    path.key  = 'own';
+    
     bullets[bullets.length] = path;
+    
+    socket.emit('bullet',{x: d.x,y:d.y});
     next=false;
     }
 
