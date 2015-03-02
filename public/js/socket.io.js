@@ -2,100 +2,69 @@
 
 socket= io.connect('127.0.0.1',{'force new connection':true});
 
-socket.on('dmg',function(){
-    takeBullet('you');
-})
+
 
 socket.on('sight',function(data){
 
-    clients[data.id].setRotation(data.rotation);
+   clients[data.id].raster.setRotation(data.rotation);
 })
 
 socket.on('bullet',function(data){
+
+
     
     var path = new Path();
      
     path.strokeColor = 'red';
-    var start = clients[data.id].position;
+    var start = clients[data.id].raster.position;
     // Move to start and draw a line from there
     path.moveTo(start);
     path.strokeWidth = 3;
     // Note the plus operator on Point objects.
     // PaperScript does that for us, and much more!
     path.lineTo(start + {x: 0, y: 20});
-    path.setRotation(clients[data.id].rotation);
+    path.setRotation(clients[data.id].raster.rotation);
  
     path.destination = {x: Number(data.x),y:Number(data.y)}
     //path.position = path.destination/40;
     //console.log(path.destination)
     path.key = data.id;
     bullets[bullets.length] = path;
+    
 
 })
 
 socket.on('hi',function(data){
-        clients[data.id]= new Raster('oman');
-        clients[data.id].position.x = data.position.x;
-        clients[data.id].position.y = data.position.y;
-        //console.log(data.position);
-        clients[data.id].scale(0.2);
-        coords[data.id] = new PointText({  point: view.center,
-            justification: 'center',
-            fontSize: 14,
-            fillColor: 'white'
-        });
-      //  console.log('Cześć '+data.id+"!")
-      clients[data.id].sendToBack();
-
+        clients[data.id]= new client(data.id,{x: data.position.x,y:data.position.y},'oman');
 });
 
 socket.on('death',function(data){
-    console.log(data.id+":"+raster.key)
-    if(data.id==raster.key){
-        //death
-        raster.position.x = 0;
-        raster.position.y = 0;
+    console.log(data.id+":"+player.id)
+    if(data.id==player.id){
+        player.death();
     }else{
-    
-        clients[data.id].position.x = 0;
-        clients[data.id].position.y = 0;
+        clients[data.id].death();
     }
-
 });
+
 socket.on('you',function(data){
-    raster.key = data.id;
+    player.id= data.id;
 });
+
 socket.on('logout',function(data){
-    clients[data.id].remove();
-    coords[data.id].remove();
-   // console.log('bye bye '+data.id);
+    clients[data.id].raster.remove();
 });
+
 socket.on('new',function(data){
-   // console.log(raster.position);
-    socket.emit('hi',{position: {x: raster.position.x,y:raster.position.y},to: data.id});
-    
-    clients[data.id]= new Raster('oman');
-    
-
-    if(typeof data.position !== undefined ){
-        clients[data.id].position = new Point([500,500]);
-
-    }else {
-        clients[data.id].position = data.position;
-    }
-
-    clients[data.id].scale(0.2);
-    coords[data.id] = new PointText({  point: view.center,
-            justification: 'center',
-            fontSize: 14,
-            fillColor: 'white'
-        });
-    console.log('Dzieki serwer! Widze nowego!' +data.id);
-    clients[data.id].sendToBack();
-
+    socket.emit('hi',{position: {x: player.raster.position.x,y:player.raster.position.y},to: data.id});
+    clients[data.id]= new client(data.id,new Point([500,500]),'oman');
 });
-socket.on('move',function(data){
 
+socket.on('move',function(data){
     moveFriend(data);
+});
+
+socket.on('dmg',function(){
+        player.dmg();
 });
 

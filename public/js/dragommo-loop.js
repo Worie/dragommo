@@ -1,10 +1,10 @@
 
-
+	player = new player({x: 500,y:500},'mona',socket,view);
 
 function onMouseMove(event){
 	mousePosition = event.point;
-   	var degree = Math.round(Math.atan2(event.point.x-raster.position.x,event.point.y-raster.position.y) * 180/Math.PI);
-   	raster.setRotation(-degree)
+   	var degree = Math.round(Math.atan2(event.point.x-player.raster.position.x,event.point.y-player.raster.position.y) * 180/Math.PI);
+   	player.raster.setRotation(-degree)
    	socket.emit('sight',{rotation:-degree});
    	mousePosition = event.point - view.center ;
    	crossHair = event.point;
@@ -22,18 +22,24 @@ function onFrame(event) {
         }else{
             var col = bulletCollision(bullets[i].position,bullets[i].key);
             if(col!=false){
-                console.log(col);
-                takeBullet(col)
-                bullets[i].remove();
-                bullets.splice(i, 1);
+            	if(col==player.id){
+           
+                player.dmg();
+                
+            }else{
+            	clients[col].dmg();
             }
+
+            	bullets[i].remove();
+                bullets.splice(i, 1);
+        	}
         }
 
 
     } 
 
     
-	movePlayer(raster);
+	player.move();
 
    if(Key.isDown('space')){
         if(next == true ){
@@ -42,16 +48,16 @@ function onFrame(event) {
     
      
 		    path.strokeColor = 'red';
-		    var start = raster.position;
+		    var start = player.raster.position;
 		    // Move to start and draw a line from there
 		    path.moveTo(start);
 		    path.strokeWidth = 3;
 		    // Note the plus operator on Point objects.
 		    // PaperScript does that for us, and much more!
 		    path.lineTo(start + {x: 0, y: 20});
-		    path.setRotation(raster.rotation);
+		    path.setRotation(player.raster.rotation);
 		    //path.destination = new Point(0,1) * view.size;
-		    var d = (crossHair - raster.position);
+		    var d = (crossHair - player.raster.position);
 		    
 		    if(Math.abs(d.x) > Math.abs(d.y)){
 		      d/=Math.abs(d.x);
@@ -72,4 +78,5 @@ function onFrame(event) {
 	}
 
 } // onFrame(){}
+
  
