@@ -1,0 +1,28 @@
+
+body {
+    text-aling:center;
+    cursor: none;
+    cursor: crosshair;
+
+}
+
+
+#canvas {
+    background-position:0px 0px;
+    background-repeat:no-repeat;
+    width:500px;
+    display:inline-block;
+    background-size: 1000px 1000px;
+    background-image:url('/imgs/map.jpg');
+    height:500px;
+
+}
+ 
+.hidden {
+    display:none;
+}
+
+.standard {
+    width:100px;
+    height:100px;
+}
