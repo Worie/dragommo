@@ -97,20 +97,33 @@ moveFriend = function (data){
 
 
 client = function (id,position,avatar){
-
+    
     this.raster = new Raster(avatar);
     this.raster.position = position;
     this.raster.scale(0.2);
     this.id = id;
 
+    // Removes client from board
+    this.remove = function(){
+        // Removes paper.js Raster
+        this.raster.remove();
+        // Completly remove this element
+        delete clients[this.id];
+    }
+    
+    // Simulates damage taking
     this.dmg = function(){
-
         that =this.raster;
+        
+        // Set the "red" icon
         this.raster.setImage(document.getElementById('dmg'));
+
+        // Set normal icon after 100ms
         var t = setTimeout(function(){
             that.setImage(document.getElementById('oman'));
         },100);
 
+        // Emit damage taking to the server
         socket.emit('dmg',{id: this.id})
     }
 
@@ -336,6 +349,7 @@ client = function (id,position,avatar){
        
       //  text.position = {x:raster.position.x, y:raster.position.y-30};
       //  text.content = raster.position.x + ":" + raster.position.y
+      //c/onsole.log(this.raster.position.x + ":" + this.raster.position.y);
         if(keyPressed==true){
             crossHair = this.view.center+mousePosition;
 
@@ -349,7 +363,7 @@ client = function (id,position,avatar){
 
 
         this.view.scrollBy({x:250,y:250});
-    this.setBackground({x:-250,y:-250})
+        this.setBackground({x:-250,y:-250})
  }
 
 

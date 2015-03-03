@@ -8,6 +8,7 @@ body {
 
 
 #canvas {
+    margin-top:10px;
     background-position:0px 0px;
     background-repeat:no-repeat;
     width:500px;

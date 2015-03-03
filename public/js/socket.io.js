@@ -52,7 +52,7 @@ socket.on('you',function(data){
 });
 
 socket.on('logout',function(data){
-    clients[data.id].raster.remove();
+    clients[data.id].remove();
 });
 
 socket.on('new',function(data){
@@ -65,6 +65,6 @@ socket.on('move',function(data){
 });
 
 socket.on('dmg',function(){
-        player.dmg();
+    player.dmg();
 });
 
