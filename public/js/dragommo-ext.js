@@ -1,112 +1,129 @@
-// Changes the position of background to have logically correct value with the view
 
-shotBullet = function(dir){
+// A lot of improvements in front of me
+shotBullet = function(ch,mod,raster){
+    //if(data.deg == true){
+            var data = new Point([ch.x,ch.y]);
+            
+            var path = new Path();
+    
+     
+            path.strokeColor = 'red';
+            var start = player.raster.position;
 
+            path.moveTo(start);
+            path.strokeWidth = 5;
+
+            path.lineTo(start + {x: 0, y: 10});
+            
+            var sign = 1;
+            if(raster.rotation<0){
+                var sign = -1;
+            }
+
+            path.setRotation((Math.abs(raster.rotation)+mod)*sign);
+            //c/onsole.log(path.rotation);
+            //path.destination = new Point(0,1) * view.size;
+            //data.y-=mod*5;
+            var d = (data - raster.position);
+            
+            if(Math.abs(d.x) > Math.abs(d.y)){
+              d/=Math.abs(d.x);
+            }else{
+              d/=Math.abs(d.y);
+            }
+            
+            //path.destination = {x: Math.round(d.x),y:Math.round(d.y)};
+            d*=1000;
+            //d.y -= mod;
+            path.destination = d;
+            path.key  = 'own';
+
+            bullets[bullets.length] = path;
+            
+            // consider
+            socket.emit('bullet',{x: d.x,y:d.y});
+
+    //}else{
+
+    //}
 }
 
 bulletCollision = function (a,k){
+    // Change to isClose of paperScript
     for (var key in clients) {
         var p = clients[key].raster.position;
-        if((k != key )&& p.x-20<=a.x && p.x+20 >=a.x &&
-            p.y-20<=a.y && p.y+20 >=a.y){
+        if((k != key ) && a.isClose(p,20)){
             return key;
         }
     }
 
-    if((k != 'own' )&& player.raster.position.x-20<=a.x && player.raster.position.x+20 >=a.x &&
-            player.raster.position.y-20<=a.y && player.raster.position.y+20 >=a.y){
+    for(var i =0,l=objects.length;i<l;i++){
+        if(objects[i].contains(a)){
+            return true;
+        }
+    }
+
+    var p = player.raster.position;
+    if((k != 'own' )&& a.isClose(p,20)){
             return player.id;
     }
+
+
     return false;
 }
 
 collisionPlayers = function (a,key){
+    var b,step = player.movementSpeed;
     
-
-    // When key D is pressed (right)
     if(key=='d'){
-        // Iterate trough all clients
-        // Todo: only visible ? 
-        for (var key in clients) {
-        var p = clients[key].raster.position;
-            if(a.x+20+step >= p.x && a.x+20+step <= p.x 
-                && (a.y + 20 <= p.y+40 && a.y + 20 >= p.y-10))
-                return false;
-        
-        }
+        b = (a+{x:step,y:0});
     }else if(key=='a'){
-       for (var key in clients) {
-        var p = clients[key].raster.position;
-            if(a.x-20+step >= p.x && a.x-20+step <= p.x +10
-                && (a.y +20 <= p.y+40 && a.y +20 >= p.y-10))
-                return false;
-        
-        }
+        b = (a+{x:-step,y:0});
     }else if(key=='w'){
-        for (var key in clients) {
-        var p = clients[key].raster.position;
-            if(a.y-step-10 >= p.y && a.y-step-10 <= p.y +10
-                && (a.x  <= p.x+30 && a.x >= p.x-30))
-                return false;
-        
-        }
+        b = (a+{x:0,y:-step});      
     }else if(key=='s'){
-        for (var key in clients) {
-            var p = clients[key].raster.position;
-            if(a.y+20+step >= p.y && a.y+20+step <= p.y+20 
-                && (a.x <= p.x+30 && a.x  >= p.x-30))
-                return false;
-        
-        }
-
+        b = (a+{x:0,y:step});
     }
 
-    //*/
-
-    
+    var t = player.size/2;
+    for (var key in clients) {
+        var p = clients[key].raster.position;
+            if(b.isClose(p,t) && !a.isClose(p,t))
+                return false;
+        }
+     for(var i =0,l=objects.length;i<l;i++){
+        if(objects[i].contains(b)){
+            return false;
+        }
+    }
     return true;
 
 }
 
 
 
-moveFriend = function (data){
-    var p = clients[data.id].raster.position;
-    if(data.left == true) {
-        p.x -= step;   
-     }
-
-    if(data.right == true) {
-        p.x += step;
-    }
-
-    if(data.up == true) {
-        p.y -= step;
-    }
-
-    if(data.down == true) {
-        p.y += step;
-    }
-        p.y = Math.round(Number(p.y));
-        p.x = Math.round(Number(p.x));
-    //    coords[data.id].position = {x:clients[data.id].position.x, y:clients[data.id].position.y-30};
-   //     coords[data.id].content = clients[data.id].position.x + ":" + clients[data.id].position.y;
-
-};
-    
-
-
 client = function (id,position,avatar){
-    
+
     this.raster = new Raster(avatar);
     this.raster.position = position;
     this.raster.scale(0.2);
     this.id = id;
+    this.movementSpeed = 5;
+    this.avatar = avatar;
 
+
+     var textField =  new PointText(this.raster.position-{x:0,y:25});
+    textField.justification = 'center';
+    textField.content = this.id;
+    textField.fillColor = "white";
+    this.nickname = textField;
+
+    this.group = new Group(this.raster,this.nickname);
     // Removes client from board
     this.remove = function(){
         // Removes paper.js Raster
         this.raster.remove();
+        this.nickname.remove();
         // Completly remove this element
         delete clients[this.id];
     }
@@ -114,13 +131,13 @@ client = function (id,position,avatar){
     // Simulates damage taking
     this.dmg = function(){
         that =this.raster;
-        
+        that.avatar = this.avatar;
         // Set the "red" icon
         this.raster.setImage(document.getElementById('dmg'));
 
         // Set normal icon after 100ms
-        var t = setTimeout(function(){
-            that.setImage(document.getElementById('oman'));
+        setTimeout(function(){
+            that.setImage(document.getElementById(that.avatar));
         },100);
 
         // Emit damage taking to the server
@@ -128,32 +145,32 @@ client = function (id,position,avatar){
     }
 
     this.death = function(){
-        console.log("LOL U DIED");
+        this.place({x: 50, y: 50});
     };
     
 
     this.place = function(p){
         //
-        this.raster.position = p;
-
+        this.group.position.x = p.x;
+        this.group.position.y = p.y;
     };
 
     this.move = function(d){
 
         if(d.left == true) {
-            this.raster.position.x -= step;   
+            this.group.position.x -= this.movementSpeed;   
          }
 
         if(d.right == true) {
-            this.raster.position.x += step;
+            this.group.position.x += this.movementSpeed;
         }
 
         if(d.up == true) {
-            this.raster.position.y -= step;
+            this.group.position.y -= this.movementSpeed;
         }
 
         if(d.down == true) {
-            this.raster.position.y += step;
+            this.group.position.y += this.movementSpeed;
         }
         this.raster.position.y = Math.round(Number(this.raster.position.y));
         this.raster.position.x = Math.round(Number(this.raster.position.x));
@@ -174,21 +191,33 @@ client = function (id,position,avatar){
  player = function(position,avatar,socket,v){
     this.raster = new Raster(avatar);
     this.raster.position = position;
-    //this.id = null;
-    //this.raster.setImage(avatar);
+    this.avatar = avatar;
     this.raster.scale(0.2);
+
+    this.size = this.raster.bounds.width;
     this.socket = socket;
     this.view = v;
-    
+    this.movementSpeed = 5;
+    this.weapon = new Raster('gun');
+    this.weapon.scale(0.1);
+    this.weapon.position=this.raster.position+{x:-10,y:0};    
+    this.group = new Group(this.raster,this.weapon)
 
     
-
+    this.setRotation = function(a){
+        this.weapon.setRotation(a);
+        this.raster.setRotation(a);
+    }
+    
     this.dmg = function(){
         //var tmp = this.raster;
         that =this.raster;
+        that.avatar = this.avatar;
         this.raster.setImage(document.getElementById('dmg'));
+        //c/onsole.log(that.avatar);
         var t = setTimeout(function(){
-            that.setImage(document.getElementById('mona'));
+            that.setImage(document.getElementById(that.avatar));
+            //c/onsole.log(that.avatar)
         },100);
 
         
@@ -197,7 +226,7 @@ client = function (id,position,avatar){
     
 
     this.death = function(){
-        console.log('lol u died');
+        this.place({x: 50, y: 50});
     };
     this.setBackground = function(p){
         var x = p.x;
@@ -238,26 +267,63 @@ client = function (id,position,avatar){
 
     };
     this.place = function(p){
+        p.x = Number(p.x);
+        p.y = Number(p.y);
         this.raster.position = p;
-        if(p.x<250 )
+        this.weapon.position = p;
+        //this.view.center = p;
+        this.socket.emit('place',{id: this.id, x: p.x , y: p.y});
+
+        var vx,vy;
+        vx = p.x - this.view.center.x;
+            vy = p.y - this.view.center.y;
+        if(p.x<250 ){
             p.x=0;
-        if(p.y<250)
-            p.y=0;
-        if(p.x>750);
+            //vx=-this.view.center.x;
+          //  this.view.center.x = 250;
+            //this.view.center.y = 250;
+            // 500
+            // 50
+            // 450
+            
+            vx=250-this.view.center.x;
+            
+        }else if(p.x>750){
             p.x=-495;
-        if(p.y>750)
+
+            vx=750 - this.view.center.x;
+
+        }else{
+            p.x/=-2;
+        }
+        if(p.y<250){
+            p.y=0;
+            vy=250-this.view.center.y;
+        }else if(p.y>750){
+            vy=750 - this.view.center.y;
             p.y=-495;
 
+        }else{
+            //vy=p.y - this.view.center.y;  
+            p.y/=-2; 
+
+        }
+        var t = new Point([vx,vy]);
+        this.view.scrollBy(t);
         this.setBackground(p);
+
+
+
     }
     this.move = function(){
 
-        var p = this.raster.position;
-    
+        var p = this.group.position;
+        var step = this.movementSpeed;
         // Nessesary parses
         p.x = Math.round(Number(p.x));
         p.y = Math.round(Number(p.y));
 
+        //c/onsole.log(globalToLocal(p));
         // Variable to store info about if any key was pressed
         var keyPressed = false;
         
@@ -356,14 +422,16 @@ client = function (id,position,avatar){
             var degree = Math.round(Math.atan2(crossHair.x-p.x,crossHair.y-p.y) * 180/Math.PI);
             this.raster.setRotation(-degree);
             this.socket.emit('sight',{rotation:-degree});
+            //c/onsole.log(this.view.bounds)
         }
 
         }
 
 
-
-        this.view.scrollBy({x:250,y:250});
-        this.setBackground({x:-250,y:-250})
+        //this.view.scrollBy({x:250,y:250});
+        //this.setBackground({x:-250,y:-250})
+        this.place({x:500,y:500});
+      
  }
 
 

@@ -3,22 +3,39 @@ body {
     text-aling:center;
     cursor: none;
     cursor: crosshair;
-
+    text-align:center;
 }
 
 
 #canvas {
-    margin-top:10px;
+    outline:1px solid black;
+    
+    top:0px;
+    left:0px;
+    --margin-top:10px;
     background-position:0px 0px;
     background-repeat:no-repeat;
     width:500px;
     display:inline-block;
     background-size: 1000px 1000px;
-    background-image:url('/imgs/map.jpg');
+    background-image:url('/imgs/map2.jpg');
     height:500px;
+    display:inline-block;
 
 }
- 
+#map {
+    position:absolute;
+    top:0px;
+    left:0px;
+    width:500px;
+    height:500px;
+   -- display:inline-block;
+}
+#gameHolder{
+    text-align:center;
+    background:silver;
+    position:relative;
+}
 .hidden {
     display:none;
 }

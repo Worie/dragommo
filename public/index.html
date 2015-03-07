@@ -11,6 +11,8 @@
     <img id="mona" class="hidden standard" src="imgs/you.png"/>
     <img id="dmg"  class="hidden standard" src="imgs/damage.png"/>
     <img id="oman" class="hidden standard"  src="imgs/other.png"/>
+    <img id="gun" class="hidden standard"  src="imgs/gun.png"/>
+
     
     <script type="text/paperscript" src="/js/dragommo-var.js" canvas="canvas"></script>
     <script type="text/paperscript" src="/js/dragommo-ext.js" canvas="canvas"></script>
@@ -23,9 +25,13 @@
   
 </head>
 <body>
-    <canvas id="canvas" keepalive="true"></canvas>
-        <canvas id="map"></canvas>
-
+    <h5 onclick="location.reload();">Welcome to the Drago MMO</h5>
+    <div id="gameHolder">
+        <canvas id="canvas" keepalive="true"></canvas>
+        <!--<canvas id="map"></canvas>
+        <br/>
+        <input type="text" id="nickname" />-->
+    </div>
 
 </body>
 </html>

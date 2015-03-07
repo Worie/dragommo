@@ -1,8 +1,8 @@
 
 
-socket= io.connect('127.0.0.1',{'force new connection':true});
+socket= io.connect(location.host,{'force new connection':true});
 
-
+console.log(location.host);
 
 socket.on('sight',function(data){
 
@@ -19,15 +19,15 @@ socket.on('bullet',function(data){
     var start = clients[data.id].raster.position;
     // Move to start and draw a line from there
     path.moveTo(start);
-    path.strokeWidth = 3;
+    path.strokeWidth = 5;
     // Note the plus operator on Point objects.
     // PaperScript does that for us, and much more!
-    path.lineTo(start + {x: 0, y: 20});
+    path.lineTo(start + {x: 0, y: 10});
     path.setRotation(clients[data.id].raster.rotation);
  
     path.destination = {x: Number(data.x),y:Number(data.y)}
     //path.position = path.destination/40;
-    //console.log(path.destination)
+    //c/onsole.log(path.destination)
     path.key = data.id;
     bullets[bullets.length] = path;
     
@@ -39,7 +39,7 @@ socket.on('hi',function(data){
 });
 
 socket.on('death',function(data){
-    console.log(data.id+":"+player.id)
+    //c/onsole.log(data.id+":"+player.id)
     if(data.id==player.id){
         player.death();
     }else{
@@ -49,6 +49,7 @@ socket.on('death',function(data){
 
 socket.on('you',function(data){
     player.id= data.id;
+    //player.textField.content = data.id;
 });
 
 socket.on('logout',function(data){
@@ -61,10 +62,18 @@ socket.on('new',function(data){
 });
 
 socket.on('move',function(data){
-    moveFriend(data);
+    clients[data.id].move(data);
 });
 
 socket.on('dmg',function(){
     player.dmg();
+});
+
+socket.on('place',function(data){
+    if(data.id == player.id){
+        player.place(data);
+    }else{
+     clients[data.id].place(data);   
+    }
 });
 

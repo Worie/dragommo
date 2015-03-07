@@ -1,16 +1,21 @@
 
-	player = new player({x: 500,y:500},'mona',socket,view);
+// consider onload somehow things below
 
-function onMouseMove(event){
-	mousePosition = event.point;
-   	var degree = Math.round(Math.atan2(event.point.x-player.raster.position.x,event.point.y-player.raster.position.y) * 180/Math.PI);
-   	player.raster.setRotation(-degree)
+player = new player({x: 500,y:500},'mona',socket,view);
+
+onMouseMove = function onMouseMove(event){
+     // console.log(view.bounds.x+":"+view.bounds.x+"\n"+player.raster.position.x+":"+player.raster.position.y+"\n\n")
+  	mousePosition = event.point;
+   	var degree = Math.round(Math.atan2(event.point.x-Math.round(player.raster.position.x),event.point.y-Math.round(player.raster.position.y)) * 180/Math.PI);
+   	player.setRotation(-degree)
    	socket.emit('sight',{rotation:-degree});
    	mousePosition = event.point - view.center ;
    	crossHair = event.point;
 }
 
-function onFrame(event) {
+onFrame = function onFrame(event) {
+
+
 
 	for(var i =0;i<bullets.length;i++){
         var tmp  = new Point([ bullets[i].destination.x/60, bullets[i].destination.y/60])
@@ -26,9 +31,9 @@ function onFrame(event) {
            
                 player.dmg();
                 
-            }else{
-            	clients[col].dmg();
-            }
+              }else if(col!=true){
+            	 clients[col].dmg();
+              }
 
             	bullets[i].remove();
                 bullets.splice(i, 1);
@@ -43,40 +48,18 @@ function onFrame(event) {
 
    if(Key.isDown('space')){
         if(next == true ){
-    
-    		var path = new Path();
-    
-     
-		    path.strokeColor = 'red';
-		    var start = player.raster.position;
-		    // Move to start and draw a line from there
-		    path.moveTo(start);
-		    path.strokeWidth = 3;
-		    // Note the plus operator on Point objects.
-		    // PaperScript does that for us, and much more!
-		    path.lineTo(start + {x: 0, y: 20});
-		    path.setRotation(player.raster.rotation);
-		    //path.destination = new Point(0,1) * view.size;
-		    var d = (crossHair - player.raster.position);
-		    
-		    if(Math.abs(d.x) > Math.abs(d.y)){
-		      d/=Math.abs(d.x);
-		    }else{
-		      d/=Math.abs(d.y);
-		    }
-		    //path.destination = {x: Math.round(d.x),y:Math.round(d.y)};
-		    d*=1000;
-		    path.destination = d;
-		    path.key  = 'own';
+    		
+    		shotBullet(crossHair,0,player.raster);
+    		//shotBullet(crossHair,20,player.raster);
 
-		    bullets[bullets.length] = path;
-		    
-		    socket.emit('bullet',{x: d.x,y:d.y});
 		    next=false;
     	}
 
 	}
 
 } // onFrame(){}
+
+
+
 
  
