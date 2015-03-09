@@ -4,6 +4,10 @@ body {
     cursor: none;
     cursor: crosshair;
     text-align:center;
+    padding-left:10%;
+    padding-right:10%;
+    background-image:url('/imgs/background.jpg');
+    background-size:fit;
 }
 
 
@@ -21,7 +25,7 @@ body {
     background-image:url('/imgs/map2.jpg');
     height:500px;
     display:inline-block;
-
+    
 }
 #map {
     position:absolute;
@@ -33,7 +37,7 @@ body {
 }
 #gameHolder{
     text-align:center;
-    background:silver;
+    
     position:relative;
 }
 .hidden {
@@ -43,4 +47,13 @@ body {
 .standard {
     width:100px;
     height:100px;
+}
+#application {
+    opacity:0.9;
+
+}
+
+h5 {
+    color:white;
+    font-size:36px;
 }

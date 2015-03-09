@@ -115,7 +115,7 @@ client = function (id,position,avatar){
      var textField =  new PointText(this.raster.position-{x:0,y:25});
     textField.justification = 'center';
     textField.content = this.id;
-    textField.fillColor = "white";
+    textField.fillColor = "red";
     this.nickname = textField;
 
     this.group = new Group(this.raster,this.nickname);
@@ -198,7 +198,7 @@ client = function (id,position,avatar){
     this.socket = socket;
     this.view = v;
     this.movementSpeed = 5;
-    this.weapon = new Raster('gun');
+    this.weapon = new Raster();
     this.weapon.scale(0.1);
     this.weapon.position=this.raster.position+{x:-10,y:0};    
     this.group = new Group(this.raster,this.weapon)
