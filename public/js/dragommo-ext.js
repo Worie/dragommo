@@ -2,6 +2,8 @@
 // A lot of improvements in front of me
 shotBullet = function(ch,mod,raster){
     //if(data.deg == true){
+
+
             var data = new Point([ch.x,ch.y]);
             
             var path = new Path();
@@ -162,8 +164,8 @@ client = function (id,position,avatar){
         socket.emit('dmg',{id: this.id})
     }
 
-    this.death = function(){
-        this.place({x: 50, y: 50});
+    this.death = function(a){
+        this.place(a);
     };
     
 
@@ -197,6 +199,21 @@ client = function (id,position,avatar){
 
     };
 
+    this.bonus = function(type,value){
+        if(type=='bonus'){
+            if(value=='speed'){
+                this.movementSpeed = 7;
+            }
+
+        }
+        
+      }
+
+    this.bonusEnd = function(type,value){
+        if(value=='speed'){
+            this.movementSpeed = 5;
+        }
+    }
 
 
 }
@@ -261,8 +278,8 @@ client = function (id,position,avatar){
 
     
 
-    this.death = function(){
-        this.place({x: 50, y: 50});
+    this.death = function(a){
+        this.place(a);
         this.life = this.maxLife;
         this.updateLifeBar('max');
     };
@@ -474,6 +491,9 @@ client = function (id,position,avatar){
       this.bonus = function(type,value){
         console.log(type+value);
         if(type=='bonus'){
+            if(value=='speed'){
+                this.movementSpeed = 7;
+            }
 
         }else if(type=='weapon'){
             this.weapons[value.name] = value;
@@ -483,14 +503,24 @@ client = function (id,position,avatar){
         
       }
 
+    this.bonusEnd = function(type,value){
+        if(value=='speed'){
+            this.movementSpeed = 5;
+        }
+    }
+
       this.updateWeapons = function(a){
         //
       };
  }
 
 
-bonus = function(type,kind,position){
-    this.raster = new Raster(kind);
+bonus = function(type,name,position){
+    if(type=='weapon'){
+        name = name.name;
+
+    }
+    this.raster = new Raster(name);
     this.raster.position = new Point([position.x,position.y]);
     this.raster.scale(0.2);
     this.Type = type;

@@ -32,13 +32,20 @@ socket.on('bonus',function(data){
 });
 
 socket.on('bonusUsage',function(data){
-    console.log(data);
-    if(data.id!=player.id){
+    if(data.id==player.id){
         player.bonus(data.bonus.type,data.bonus.value)
     }else{
-
+        clients[data.id].bonus(data.bonus.type,data.bonus.value);
     }
     bonuses[data.key].delete();
+});
+
+socket.on('bonusEnd',function(data){
+    if(data.id==player.id){
+        player.bonusEnd(data.bonus.type,data.bonus.value)
+    }else{
+        clients[data.id].bonusEnd(data.bonus.type,data.bonus.value);
+    }
 });
 
 socket.on('bullet',function(data){
@@ -73,10 +80,10 @@ socket.on('hi',function(data){
 socket.on('death',function(data){
     //c/onsole.log(data.id+":"+player.id)
     if(data.id==player.id){
-        player.death();
+        player.death(data.position);
 
     }else{
-        clients[data.id].death();
+        clients[data.id].death(data.position);
     }
 });
 
