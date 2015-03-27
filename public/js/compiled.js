@@ -1,4 +1,70 @@
 
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/* Merging js from "list.txt" begins */
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+
+/* Last merge : ptk 20 mar 22:25:49 2015 CET  */
+
+/* Merging order :
+
+- dragommo/public/js/dragommo-var.js
+- dragommo/public/js/dragommo-ext.js
+- dragommo/public/js/dragommo-init.js
+- dragommo/public/js/dragommo-socket.js
+- dragommo/public/js/dragommo-loop.js
+- dragommo/public/js/compiled.js
+
+*/
+
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/* Merging js: dragommo/public/js/dragommo-var.js begins */
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+
+
+
+
+ step = 10;
+
+ chatInput = false;
+ mousePosition = {};
+ crossHair = {x: 0,y:0}
+
+ next= false;
+ bullets = Array();
+ clients = [];
+ objects = [];
+
+ objects[0] = new Path.Rectangle(100,350,200,20);
+ objects[0].fillColor = "black";
+ objects[1] = new Path.Rectangle(285,150,15,200);
+ objects[1].fillColor = "black";
+
+
+ objects[2] = new Path.Rectangle(650,350,200,20);
+ objects[2].fillColor = "black";
+ objects[3] = new Path.Rectangle(650,150,15,200);
+ objects[3].fillColor = "black";
+
+ objects[4] = new Path.Rectangle(100,650,200,20);
+ objects[4].fillColor = "black";
+ objects[5] = new Path.Rectangle(285,650,15,200);
+ objects[5].fillColor = "black";
+
+ objects[6] = new Path.Rectangle(650,650,200,20);
+ objects[6].fillColor = "black";
+ objects[7] = new Path.Rectangle(650,650,15,200);
+ objects[7].fillColor = "black";
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/* Merging js: dragommo/public/js/dragommo-ext.js begins */
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+
+
 // A lot of improvements in front of me
 shotBullet = function(ch,mod,raster){
     //if(data.deg == true){
@@ -63,9 +129,9 @@ bulletCollision = function (a,k){
         }
     }
 
-   var p = player.raster.position;
+    var p = player.raster.position;
     if((k != 'own' )&& a.isClose(p,20)){
-            return true;
+            return player.id;
     }
 
 
@@ -91,29 +157,11 @@ collisionPlayers = function (a,key){
             if(b.isClose(p,t) && !a.isClose(p,t))
                 return false;
         }
-     
      for(var i =0,l=objects.length;i<l;i++){
-
-        if(objects[i].Type=='surrounding'){
-            if(objects[i].contains(b)){
-                return false;
-            }
-        }else{
-            //for (var key in objects[i]){
-                //objects[i].key
-            //}
+        if(objects[i].contains(b)){
+            return false;
         }
     }
-
-
-    for (var key in bonuses) {
-        var p = bonuses[key].raster.position;
-            if(b.isClose(p,t) && !a.isClose(p,t)){
-                socket.emit('bonus',{key: key});
-                bonuses[key].delete();
-            }
-        }
-
     return true;
 
 }
@@ -205,11 +253,8 @@ client = function (id,position,avatar){
 
 
 
- Player = function(position,avatar,socket,v,maxLife){
-    maxLife = 30; // comment out later
-    this.maxLife = maxLife;
-    this.life = this.maxLife;
 
+ player = function(position,avatar,socket,v){
     this.raster = new Raster(avatar);
     this.raster.position = position;
     this.avatar = avatar;
@@ -219,42 +264,27 @@ client = function (id,position,avatar){
     this.socket = socket;
     this.view = v;
     this.movementSpeed = 5;
-    this.activeWeapon = null;
     this.weapon = new Raster();
     this.weapon.scale(0.1);
     this.weapon.position=this.raster.position+{x:-10,y:0};    
     this.group = new Group(this.raster,this.weapon)
 
-    this.weapons = {};
-    this.updateLifeBar = function(){
-        $('#hpBar').css('width',this.life/(maxLife-1)*100+'%');
-    }
-    this.setWeapon = function(obj){
-        this.weapons[obj.name] = obj;
-    }
-    this.activateWeapon = function(a){
-        this.activeWeapon = this.weapons[a];
-        intervals.time(this.activeWeapon.fireRate);
-    }
+    
     this.setRotation = function(a){
         this.weapon.setRotation(a);
         this.raster.setRotation(a);
     }
     
     this.dmg = function(){
-        this.life--;
-        this.updateLifeBar();
         //var tmp = this.raster;
         that =this.raster;
         that.avatar = this.avatar;
         this.raster.setImage(document.getElementById('dmg'));
-        $("#ui").addClass('damage');
         //c/onsole.log(that.avatar);
         var t = setTimeout(function(){
-            $("#ui").removeClass('damage');
             that.setImage(document.getElementById(that.avatar));
             //c/onsole.log(that.avatar)
-        },15);
+        },100);
 
         
     }
@@ -263,8 +293,6 @@ client = function (id,position,avatar){
 
     this.death = function(){
         this.place({x: 50, y: 50});
-        this.life = this.maxLife;
-        this.updateLifeBar('max');
     };
     this.setBackground = function(p){
         var x = p.x;
@@ -465,42 +493,179 @@ client = function (id,position,avatar){
 
         }
 
-        this.shot = function(){
 
-        };
+        //this.view.scrollBy({x:250,y:250});
+        //this.setBackground({x:-250,y:-250})
         this.place({x:500,y:500});
-
-
-      this.bonus = function(type,value){
-        console.log(type+value);
-        if(type=='bonus'){
-
-        }else if(type=='weapon'){
-            this.weapons[value.name] = value;
-            this.updateWeapons(value.name);
-            this.activateWeapon(value.name);
-        }
-        
-      }
-
-      this.updateWeapons = function(a){
-        //
-      };
+      
  }
 
 
-bonus = function(type,kind,position){
-    this.raster = new Raster(kind);
-    this.raster.position = new Point([position.x,position.y]);
-    this.raster.scale(0.2);
-    this.Type = type;
+
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/* Merging js: dragommo/public/js/dragommo-init.js begins */
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+
+setInterval(function(){next=true;},100)
+
+//chatField = new textPoint();
+var UI = new Group();
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/* Merging js: dragommo/public/js/dragommo-socket.js begins */
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+
+
+
+socket= io.connect(location.host,{'force new connection':true});
+
+console.log(location.host);
+
+socket.on('sight',function(data){
+
+   clients[data.id].raster.setRotation(data.rotation);
+})
+
+socket.on('bullet',function(data){
+
+
+    
+    var path = new Path();
+     
+    path.strokeColor = 'red';
+    var start = clients[data.id].raster.position;
+    // Move to start and draw a line from there
+    path.moveTo(start);
+    path.strokeWidth = 5;
+    // Note the plus operator on Point objects.
+    // PaperScript does that for us, and much more!
+    path.lineTo(start + {x: 0, y: 10});
+    path.setRotation(clients[data.id].raster.rotation);
+ 
+    path.destination = {x: Number(data.x),y:Number(data.y)}
+    //path.position = path.destination/40;
+    //c/onsole.log(path.destination)
+    path.key = data.id;
+    bullets[bullets.length] = path;
     
 
-    this.delete = function(){
-        this.raster.remove();
-    };
+})
+
+socket.on('hi',function(data){
+        clients[data.id]= new client(data.id,{x: data.position.x,y:data.position.y},'oman');
+});
+
+socket.on('death',function(data){
+    //c/onsole.log(data.id+":"+player.id)
+    if(data.id==player.id){
+        player.death();
+    }else{
+        clients[data.id].death();
+    }
+});
+
+socket.on('you',function(data){
+    player.id= data.id;
+    //player.textField.content = data.id;
+});
+
+socket.on('logout',function(data){
+    clients[data.id].remove();
+});
+
+socket.on('new',function(data){
+    socket.emit('hi',{position: {x: player.raster.position.x,y:player.raster.position.y},to: data.id});
+    clients[data.id]= new client(data.id,new Point([500,500]),'oman');
+});
+
+socket.on('move',function(data){
+    clients[data.id].move(data);
+});
+
+socket.on('dmg',function(){
+    player.dmg();
+});
+
+socket.on('place',function(data){
+    if(data.id == player.id){
+        player.place(data);
+    }else{
+     clients[data.id].place(data);   
+    }
+});
 
 
 
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/* Merging js: dragommo/public/js/dragommo-loop.js begins */
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+
+
+// consider onload somehow things below
+
+player = new player({x: 500,y:500},'mona',socket,view);
+
+onMouseMove = function onMouseMove(event){
+     // console.log(view.bounds.x+":"+view.bounds.x+"\n"+player.raster.position.x+":"+player.raster.position.y+"\n\n")
+  	mousePosition = event.point;
+   	var degree = Math.round(Math.atan2(event.point.x-Math.round(player.raster.position.x),event.point.y-Math.round(player.raster.position.y)) * 180/Math.PI);
+   	player.setRotation(-degree)
+   	socket.emit('sight',{rotation:-degree});
+   	mousePosition = event.point - view.center ;
+   	crossHair = event.point;
 }
+
+onFrame = function onFrame(event) {
+
+
+
+	for(var i =0;i<bullets.length;i++){
+        var tmp  = new Point([ bullets[i].destination.x/60, bullets[i].destination.y/60])
+        bullets[i].position+=tmp;
+
+       if(bullets[i].position.y>1000 || bullets[i].position.x>1000 || bullets[i].position.y<0 || bullets[i].position.x<0 ){
+            bullets[i].remove();
+            bullets.splice(i, 1);
+        }else{
+            var col = bulletCollision(bullets[i].position,bullets[i].key);
+            if(col!=false){
+            	if(col==player.id){
+           
+                player.dmg();
+                
+              }else if(col!=true){
+            	 clients[col].dmg();
+              }
+
+            	bullets[i].remove();
+                bullets.splice(i, 1);
+        	}
+        }
+
+
+    } 
+
+    
+	player.move();
+
+   if(Key.isDown('space')){
+        if(next == true ){
+    		
+    		shotBullet(crossHair,0,player.raster);
+    		//shotBullet(crossHair,20,player.raster);
+
+		    next=false;
+    	}
+
+	}
+
+} // onFrame(){}
+
+
+
+
+ 

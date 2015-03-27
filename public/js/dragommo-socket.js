@@ -9,6 +9,38 @@ socket.on('sight',function(data){
    clients[data.id].raster.setRotation(data.rotation);
 })
 
+
+socket.on('birth',function(data){
+    player = new Player({x:500,y:500},'mona',socket,view);
+    player.setWeapon(data.activeWeapon);
+    player.activateWeapon(data.activeWeapon.name); 
+    ready = true;
+});
+
+
+socket.on('bonus',function(data){
+    
+    for(var key in bonuses){
+        bonuses[key].delete();
+    }
+
+    for(var key in data){
+        if(data[key].visible==true)
+        bonuses[key] = new bonus(data[key].type,data[key].value,data[key].position);
+    } 
+
+});
+
+socket.on('bonusUsage',function(data){
+    console.log(data);
+    if(data.id!=player.id){
+        player.bonus(data.bonus.type,data.bonus.value)
+    }else{
+
+    }
+    bonuses[data.key].delete();
+});
+
 socket.on('bullet',function(data){
 
 
@@ -42,6 +74,7 @@ socket.on('death',function(data){
     //c/onsole.log(data.id+":"+player.id)
     if(data.id==player.id){
         player.death();
+
     }else{
         clients[data.id].death();
     }

@@ -12,27 +12,45 @@
     <img id="dmg"  class="hidden standard" src="imgs/damage.png"/>
     <img id="oman" class="hidden standard"  src="imgs/other.png"/>
     <img id="gun" class="hidden standard"  src="imgs/gun.png"/>
+    <img id="speed" class="hidden standard"  src="imgs/gun.png"/>
 
     
-    <script type="text/paperscript" src="/js/dragommo-var.js" canvas="canvas"></script>
+  <script type="text/paperscript" src="/js/dragommo-var.js" canvas="canvas"></script>
     <script type="text/paperscript" src="/js/dragommo-ext.js" canvas="canvas"></script>
     <script type="text/paperscript" src="/js/dragommo-init.js" canvas="canvas"></script>
-    <script type="text/paperscript" src="/js/socket.io.js" canvas="canvas"></script>
+    <script type="text/paperscript" src="/js/dragommo-socket.js" canvas="canvas"></script>
     <script type="text/paperscript" src="/js/dragommo-loop.js" canvas="canvas"></script>
+<!--  
 
+    <script type="text/paperscript" src="/js/compiled-min.js" canvas="canvas"></script>-->
     <link rel="StyleSheet" href="css/style.css" type="text/css">
 
     
 </head>
 <body>
-    <div id="application">
-        <h5 onclick="location.reload();">Welcome to the Drago MMO</h5>
-        <div id="gameHolder">
+    <div id="gameHolder">
+        <div style='position:relative;text-align:center;'>
+        
+        <div id="game" style='position:relative;text-align:center;'>
+            
             <canvas id="canvas" keepalive="true"></canvas>
             <!--<canvas id="map"></canvas>
             <br/>
             <input type="text" id="nickname" />-->
+            <div id="ui" >
+                <div class="up">
+                <div class='bar' id="hpBar"></div>
+                </div>
+                <div class="bottom">
+                    <div class='tile'></div>                   <div class='tile'></div>                   <div class='tile'></div>                   <div class='tile'></div>                   <div class='tile'></div>
+                    <div class='tile'></div>
+                    <div class='tile'></div>
+                    <div class='tile'></div>
+                </div>
+            </div>
+
         </div>
+    </div>
     </div>
 </body>
 </html>

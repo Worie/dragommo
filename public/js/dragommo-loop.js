@@ -1,9 +1,13 @@
 
 // consider onload somehow things below
 
-player = new player({x: 500,y:500},'mona',socket,view);
+    
+ready = false;
 
 onMouseMove = function onMouseMove(event){
+
+if(!ready)
+  return;
      // console.log(view.bounds.x+":"+view.bounds.x+"\n"+player.raster.position.x+":"+player.raster.position.y+"\n\n")
   	mousePosition = event.point;
    	var degree = Math.round(Math.atan2(event.point.x-Math.round(player.raster.position.x),event.point.y-Math.round(player.raster.position.y)) * 180/Math.PI);
@@ -12,10 +16,10 @@ onMouseMove = function onMouseMove(event){
    	mousePosition = event.point - view.center ;
    	crossHair = event.point;
 }
-
 onFrame = function onFrame(event) {
 
-
+if(!ready)
+  return;
 
 	for(var i =0;i<bullets.length;i++){
         var tmp  = new Point([ bullets[i].destination.x/60, bullets[i].destination.y/60])
@@ -56,6 +60,7 @@ onFrame = function onFrame(event) {
     	}
 
 	}
+
 
 } // onFrame(){}
 
