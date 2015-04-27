@@ -1,11 +1,15 @@
+@font-face { 
+    font-family: DragonBall; src: url('font.ttf'); 
+} 
+
 
 body {
-    text-aling:center;
+    text-align:center;
     cursor: none;
     cursor: crosshair;
-    text-align:center;
-    padding-left:10%;
-    padding-right:10%;
+    font-family: DragonBall;
+
+    
     background-image:url('/imgs/background.jpg');
     background-size:fit;
 }
@@ -13,17 +17,18 @@ body {
 
 #canvas {
     outline:1px solid black;
-    
+    transform:rotate(0);
+    -webkit-transform:rotate(0);
     top:0px;
     left:0px;
     --margin-top:10px;
     background-position:0px 0px;
     background-repeat:no-repeat;
-    width:500px;
+    --width:500px;
     --display:inline-block;
     background-size: 1000px 1000px;
     background-image:url('/imgs/map2.jpg');
-    height:500px;
+    --height:500px;
     margin:0 auto;
     position:absolute;
     top:0px;
@@ -42,6 +47,10 @@ body {
     
     
 }
+.full {
+    width:100%;
+    height:100%;
+}
 .hidden {
     display:none;
 }
@@ -49,12 +58,15 @@ body {
 .standard {
     width:100px;
     height:100px;
+    background-image: url('imgs/you.png');
+    background-size:cover;
 }
 #gameHolder {
     opacity:0.9;
     text-align:center;
     position:absolute;
-
+    left:0px;
+    top:0px;
 
 
 }
@@ -64,7 +76,7 @@ body {
 }
 
 #ui {
-    height:500px;width:500px;padding:0;pointer-events:none;margin:0 auto;
+    padding:0;pointer-events:none;margin:0 auto;
             display:block;left:0px;top:0px;position:absolute;  
             background:none;
             opacity:0.5;
@@ -98,15 +110,89 @@ h5 {
     width:100%;
     background:green;
     height:50%;
+    outline:1px solid black;
 }
 
 .tile {
-    display:inline-block;
+    display:none;
+    --display:inline-block;
     border-radius:10px;
     height:50px;
     width:50px;
     background:black;
     padding:0;
     margin-left:5px;
+
+}
+
+#test {
+    text-align:center;
+    position:relative;
+    display:inline-block;
+    width:500px;
+    height:500px;
+
+}
+
+.gameButton {
+outline: 0px;
+background:green;
+/*background-image:url('');*/
+box-shadow: 0px 0px 15px orange;
+opacity:0.8;
+width:200px;
+height:40px;
+font-size:25px;
+border:1px solid orange;
+margin:0 auto;
+margin-top:5px;
+border-radius:20px;
+}
+
+.gameButton.inactive {
+
+    background:#003300;
+    box-shadow: 0px 0px 15px silver;
+    border:1px solid silver;
+    color:silver;
+    
+}
+
+.gameButton:not(.inactive):hover{
+color:orange;
+}
+
+
+.gameButton:hover{
+    cursor:pointer;
+}
+
+input {
+    color:orange;
+    background:green;
+    outline:1px solid orange;
+    color:white;
+    font-family:DragonBall;
+    font-size:25px;
+    width:50%;
+    text-align:center;
+}
+
+#innerform {
+    display:inline-block;
+    
+}
+
+.map { 
+    display:inline-block;
+    float:right;
+    background-image:url('/imgs/map2.jpg');
+    background-size:cover;
+    outline:1px solid black;
+    padding:0;
+    width:100px;
+    height:100px;
+    margin:10px;
+    z-index:1;
 
 }

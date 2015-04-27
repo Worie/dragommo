@@ -1,0 +1,85 @@
+<!--<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Dragon MMO </title>
+    -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/jquery-2.1.0.min.js"></script>
+    <script type="text/javascript" src="js/paper-full.js"></script>
+    
+   
+    
+  <script type="text/paperscript" src="/js/dragommo-var.js" canvas="canvas"></script>
+    <script type="text/paperscript" src="/js/dragommo-ext.js" canvas="canvas"></script>
+    <script type="text/paperscript" src="/js/dragommo-init.js" canvas="canvas"></script>
+    <script type="text/paperscript" src="/js/dragommo-socket.js" canvas="canvas"></script>
+    <script type="text/paperscript" src="/js/dragommo-loop.js" canvas="canvas"></script>
+    <!--  
+    <script type="text/paperscript" src="/js/compiled-min.js" canvas="canvas"></script>
+    -->
+    <script>
+    scores = false;
+    //$('#canvas').focus();
+    //$('#canvas').click(function(){console.log('leaving');})
+    toggleScores = function(){
+        if(scores==false){
+            $("#ui").css('background','grey');
+            scores=true;
+        }else{
+            $("#ui").css('background','none');
+            scores=false;
+        }
+
+    };
+    
+    </script>
+
+     <img id="mona" class="hidden standard" src="imgs/you.png"/>
+     <img id="goku" class="hidden standard" src="imgs/goku.png"/>
+     <img id="piccolo" class="hidden standard" src="imgs/pikolo.png"/>
+
+     <img id="background" class="hidden standard" src="imgs/map2.jpg"/>
+
+    <img id="dmg"  class="hidden standard" src="imgs/damage.png"/>
+    <img id="oman" class="hidden standard"  src="imgs/other.png"/>
+    <img id="gun" class="hidden standard"  src="imgs/gun.png"/>
+    <img id="speed" class="hidden standard"  src="imgs/speed.png"/>
+    <img id="uzi" class="hidden standard"  src="imgs/uzi.png"/>
+    <img id="ki_blast" class="hidden standard"  src="imgs/ki_blast.png"/>
+    <img id="enemy_blast" class="hidden standard"  src="imgs/enemy_blast.png"/>
+
+    
+        
+    
+            
+            <canvas  id="canvas" keepalive="true" class="full" ></canvas>
+            <!--<canvas id="map"></canvas>
+            <br/>
+            <input type="text" id="nickname" />-->
+            <div id="ui" class="full" >
+                <div class="up">
+                    <div class='bar' id="hpBar"></div>
+                    
+                    <div class="map hidden">
+                        <canvas style="width:100%;height:100%"></canvas>
+                    </div>
+                </div>
+                <div class="bottom">
+                    <div class='tile' style="background-image:url('imgs/uzi.png');background-size:cover;"></div>
+                    <div class='tile'></div> 
+                    <div class='tile'></div>
+                    <div class='tile'></div>                   
+                    <div class='tile'></div>
+                    <div class='tile'></div>
+                    <div class='tile'></div>
+                    <div class='tile'></div>
+                </div>
+                <div id="stats"></div> 
+            </div>
+
+    
+
+    <!--
+</body>
+</html>

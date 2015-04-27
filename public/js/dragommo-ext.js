@@ -1,3 +1,8 @@
+raster  = new Raster('background');
+raster.scale(3.2);
+raster.position = new Point([0,0]);
+raster.sendToBack();
+
 
 // A lot of improvements in front of me
 shotBullet = function(ch,mod,raster){
@@ -6,7 +11,7 @@ shotBullet = function(ch,mod,raster){
 
             var data = new Point([ch.x,ch.y]);
             
-            var path = new Path();
+    /*        var path = new Path();
     
      
             path.strokeColor = 'red';
@@ -16,7 +21,14 @@ shotBullet = function(ch,mod,raster){
             path.strokeWidth = 5;
 
             path.lineTo(start + {x: 0, y: 10});
-            
+            */
+
+
+            var path = new Raster('ki_blast');
+            path.position = player.raster.position;
+            path.scale(1);
+          //  path.insertBelow(player.raster);
+            //what the
             var sign = 1;
             if(raster.rotation<0){
                 var sign = -1;
@@ -35,11 +47,11 @@ shotBullet = function(ch,mod,raster){
             }
             
             //path.destination = {x: Math.round(d.x),y:Math.round(d.y)};
-            d*=1000;
+            d*=totalSize;
             //d.y -= mod;
             path.destination = d;
             path.key  = 'own';
-
+            path.vector = {x:d.x/(totalSize/20),y:d.y/(totalSize/20)};
             bullets[bullets.length] = path;
             
             // consider
@@ -50,8 +62,11 @@ shotBullet = function(ch,mod,raster){
     //}
 }
 
-bulletCollision = function (a,k){
+bulletCollision = function (a){
     // Change to isClose of paperScript
+    var k = a.key;
+    var b=a;
+    a = a.position;
     for (var key in clients) {
         var p = clients[key].raster.position;
         if((k != key ) && a.isClose(p,20)){
@@ -60,7 +75,9 @@ bulletCollision = function (a,k){
     }
 
     for(var i =0,l=objects.length;i<l;i++){
-        if(objects[i].contains(a)){
+        if(objects[i].contains(a) || a.isClose(objects[i],b.width/2)){
+            //b.vector = {x: -b.vector.x,y:-b.vector.y}; 
+            // bounce to improve
             return true;
         }
     }
@@ -98,12 +115,9 @@ collisionPlayers = function (a,key){
 
         if(objects[i].Type=='surrounding'){
             if(objects[i].contains(b)){
+                console.log('a')
                 return false;
             }
-        }else{
-            //for (var key in objects[i]){
-                //objects[i].key
-            //}
         }
     }
 
@@ -122,7 +136,7 @@ collisionPlayers = function (a,key){
 
 
 
-client = function (id,position,avatar){
+client = function (id,position,avatar,name){
 
     this.raster = new Raster(avatar);
     this.raster.position = position;
@@ -134,7 +148,8 @@ client = function (id,position,avatar){
 
      var textField =  new PointText(this.raster.position-{x:0,y:25});
     textField.justification = 'center';
-    textField.content = this.id;
+    console.log(name);
+    textField.content = ((name =="") ? id:name);
     textField.fillColor = "red";
     this.nickname = textField;
 
@@ -158,7 +173,7 @@ client = function (id,position,avatar){
         // Set normal icon after 100ms
         setTimeout(function(){
             that.setImage(document.getElementById(that.avatar));
-        },100);
+        },15);
 
         // Emit damage taking to the server
         socket.emit('dmg',{id: this.id})
@@ -220,7 +235,11 @@ client = function (id,position,avatar){
 
 
 
-
+layer = new Path.Rectangle(new Point([0,0]),new Size(1100,1100));
+layer.fillColor = 'red';
+layer.opacity = 0.5;
+layer.bringToFront();
+layer.visible=false;
 
  Player = function(position,avatar,socket,v,maxLife){
     maxLife = 30; // comment out later
@@ -238,7 +257,7 @@ client = function (id,position,avatar){
     this.movementSpeed = 5;
     this.activeWeapon = null;
     this.weapon = new Raster();
-    this.weapon.scale(0.1);
+    this.weapon.scale(0.2);
     this.weapon.position=this.raster.position+{x:-10,y:0};    
     this.group = new Group(this.raster,this.weapon)
 
@@ -264,12 +283,13 @@ client = function (id,position,avatar){
         //var tmp = this.raster;
         that =this.raster;
         that.avatar = this.avatar;
-        this.raster.setImage(document.getElementById('dmg'));
-        $("#ui").addClass('damage');
+        layer.visible = true;
+        //this.raster.setImage(document.getElementById('dmg'));
+        //$("#ui").addClass('damage');
         //c/onsole.log(that.avatar);
         var t = setTimeout(function(){
-            $("#ui").removeClass('damage');
-            that.setImage(document.getElementById(that.avatar));
+            //$("#ui").removeClass('damage');
+            layer.visible = false;
             //c/onsole.log(that.avatar)
         },15);
 
@@ -283,90 +303,37 @@ client = function (id,position,avatar){
         this.life = this.maxLife;
         this.updateLifeBar('max');
     };
-    this.setBackground = function(p){
-        var x = p.x;
-        var y = p.y;
-
-        var canvas = $("#canvas");
-        var pos=canvas.css('background-position').split(" ");
-    
-        pos[0]=parseFloat(pos[0]);
-        pos[1]=parseFloat(pos[1]);
-
-
-       if(pos[0]>-500 && pos[0]<=0)
-            pos[0]=x;
-       if(pos[1]>-500 && pos[1]<=0)
-            pos[1]=y;
-        canvas.css('background-position',Math.round(Number(pos[0]))+'px '+Math.round(Number(pos[1]))+'px');
-
-
-    };
-
-    this.moveBackground = function(x,y){
-
-        var canvas = $("#canvas");
-        var pos=canvas.css('background-position').split(" ");
-    
-        pos[0]=parseFloat(pos[0]);
-        pos[1]=parseFloat(pos[1]);
-
-
-       if(pos[0]+x>-500 && pos[0]+x<=0)
-            pos[0]+=x;
-       if(pos[1]+y>-500 && pos[1]+y<=0)
-            pos[1]+=y;
-        canvas.css('background-position',Math.round(Number(pos[0]))+'px '+Math.round(Number(pos[1]))+'px');
-    
-    
-
-    };
+  
     this.place = function(p){
         p.x = Number(p.x);
         p.y = Number(p.y);
         this.raster.position = p;
         this.weapon.position = p;
-        //this.view.center = p;
+
         this.socket.emit('place',{id: this.id, x: p.x , y: p.y});
+
 
         var vx,vy;
         vx = p.x - this.view.center.x;
             vy = p.y - this.view.center.y;
-        if(p.x<250 ){
-            p.x=0;
-            //vx=-this.view.center.x;
-          //  this.view.center.x = 250;
-            //this.view.center.y = 250;
-            // 500
-            // 50
-            // 450
+        if(p.x<boardSize/2 ){
+            vx=boardSize/2-this.view.center.x;
             
-            vx=250-this.view.center.x;
-            
-        }else if(p.x>750){
-            p.x=-495;
+        }else if(p.x>totalSize-(boardSize/2)){
 
-            vx=750 - this.view.center.x;
-
-        }else{
-            p.x/=-2;
-        }
-        if(p.y<250){
-            p.y=0;
-            vy=250-this.view.center.y;
-        }else if(p.y>750){
-            vy=750 - this.view.center.y;
-            p.y=-495;
-
-        }else{
-            //vy=p.y - this.view.center.y;  
-            p.y/=-2; 
+            vx=totalSize-(boardSize/2) - this.view.center.x;
 
         }
+
+        if(p.y<boardSize/2){
+            vy=boardSize/2-this.view.center.y;
+        }else if(p.y>totalSize-(boardSize/2)){
+            vy=totalSize-(boardSize/2) - this.view.center.y;
+
+        }
+       
         var t = new Point([vx,vy]);
         this.view.scrollBy(t);
-        this.setBackground(p);
-
 
 
     }
@@ -385,19 +352,25 @@ client = function (id,position,avatar){
         // "A" button pressed ("LEFT")
         // the second condition are the corners of map
         // Todo: variable based second condition
-        if(Key.isDown('a') && p.x>20) {
+        //console.log(raster)
+        if(Key.isDown('a') &&  p.x>noname) { //
             keyPressed = true;
 
             // Looks for collision when moved to right ('a' button)
            if(collisionPlayers(p,'a')){
 
                 // If player isnt moving inside of one of the corners, scroll the background and view
-                if(p.x>250 && p.x<=750){
+                // p.x>width/2 && p.x<=total-size-width/2
+                //if(p.x>boardSize/2 && p.x<=totalSize-(boardSize/2)){
+
+
+                if(p.x>(boardSize/2) && p.x<totalSize-(boardSize/2) && this.view.center.x>(boardSize/2) ){ 
                     this.view.scrollBy({x:-step,y:0});
-                    this.moveBackground(step,0);
+                    //this.moveBackground(step,0);
                 }
                 
 
+                console.log(this.view.center.x)
                 // Update player position
                 p.x -= step;   
 
@@ -408,13 +381,13 @@ client = function (id,position,avatar){
          }
 
         // "D" button pressed ("RIGHT")
-        if(Key.isDown('d') && p.x<980) {
+        if(Key.isDown('d') && p.x<totalSize-noname) {
             keyPressed = true;
             if(collisionPlayers(p,'d')){
-            
-                    if(p.x>=250 && p.x<750){
+                
+                    if(p.x>(boardSize/2) && p.x<totalSize-(boardSize/2) && this.view.center.x<totalSize-(boardSize/2) ){
                     this.view.scrollBy({x:step,y:0});
-                    this.moveBackground(-step,0); 
+                   // this.moveBackground(-step,0); 
                 }
                 
                 p.x += step;
@@ -425,13 +398,13 @@ client = function (id,position,avatar){
         }
 
         // "W" button pressed ("UP")
-        if(Key.isDown('w') &&  p.y>20) {
+        if(Key.isDown('w') &&  p.y>noname) {
             keyPressed = true;
            if(collisionPlayers(p,'w')){
 
-               if(p.y>250 && p.y<750){
+               if(p.y>(boardSize/2) && p.y<totalSize-(boardSize/2) && this.view.center.y>(boardSize/2) ){
                     this.view.scrollBy({x:0,y:-step});
-                    this.moveBackground(0,step);
+                  //  this.moveBackground(0,step);
                 }
                 p.y -= step;
 
@@ -441,13 +414,13 @@ client = function (id,position,avatar){
         }
 
         // "S" button pressed ("DOWN")
-        if(Key.isDown('s') && p.y<980) {
+        if(Key.isDown('s') && p.y<totalSize-noname) {
             keyPressed = true;
             if(collisionPlayers(p,'s')){
 
-                if(p.y>250 && p.y<750){
+                if(p.y>(boardSize/2) && p.y<totalSize-(boardSize/2) && this.view.center.y<totalSize-(boardSize/2) ){
                     this.view.scrollBy({x:0,y:step});
-                    this.moveBackground(0,-step);
+                 //   this.moveBackground(0,-step);
                 }
                 
                 p.y += step;
@@ -456,17 +429,17 @@ client = function (id,position,avatar){
             }
 
         }
+    /*
+
         // Very important.
         p.x = Math.round(Number(p.x));
         p.y = Math.round(Number(p.y));
 
-        if(p.x>250 && p.x < 750 & p.y>250 && p.y<750){
+        if(p.x>=(boardSize/2) && p.x <= totalSize-(boardSize/2) && p.y>=(boardSize/2) && p.y<=totalSize-(boardSize/2)){
             this.view.center = p;
             //text.fillColor = "white";
-        }else{
-            //text.fillColor = "red";
         }
-        
+     */   
        
       //  text.position = {x:raster.position.x, y:raster.position.y-30};
       //  text.content = raster.position.x + ":" + raster.position.y
@@ -489,7 +462,6 @@ client = function (id,position,avatar){
 
 
       this.bonus = function(type,value){
-        console.log(type+value);
         if(type=='bonus'){
             if(value=='speed'){
                 this.movementSpeed = 7;

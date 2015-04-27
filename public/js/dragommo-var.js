@@ -1,6 +1,9 @@
 player = {};
 
 
+
+size = {x: 500,y:500};
+
  step = 10;
 
  chatInput = false;
@@ -43,5 +46,8 @@ player = {};
 
 
 bonuses = {};
+
+
+
 
 

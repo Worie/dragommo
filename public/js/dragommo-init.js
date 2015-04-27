@@ -16,3 +16,7 @@ intervals = new fireRates(1000);
 
 //chatField = new textPoint();
 var UI = new Group();
+
+noname=20;
+boardSize = 500;
+totalSize = 1000;

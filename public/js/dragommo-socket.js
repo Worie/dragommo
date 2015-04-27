@@ -2,8 +2,7 @@
 
 socket= io.connect(location.host,{'force new connection':true});
 
-console.log(location.host);
-
+socket.emit('ready',{nick: nickname});
 socket.on('sight',function(data){
 
    clients[data.id].raster.setRotation(data.rotation);
@@ -52,7 +51,7 @@ socket.on('bullet',function(data){
 
 
     
-    var path = new Path();
+    /*var path = new Path();
      
     path.strokeColor = 'red';
     var start = clients[data.id].raster.position;
@@ -62,19 +61,30 @@ socket.on('bullet',function(data){
     // Note the plus operator on Point objects.
     // PaperScript does that for us, and much more!
     path.lineTo(start + {x: 0, y: 10});
+    */
+
+    var path = new Raster('enemy_blast');
+    path.position = clients[data.id].raster.position;
+    path.insertBelow(clients[data.id].raster);
+
+
+
     path.setRotation(clients[data.id].raster.rotation);
  
     path.destination = {x: Number(data.x),y:Number(data.y)}
     //path.position = path.destination/40;
     //c/onsole.log(path.destination)
     path.key = data.id;
+    path.vector = {x:path.destination.x/(totalSize/20),y:path.destination.y/(totalSize/20)};
     bullets[bullets.length] = path;
     
+
+    // VERY IMPORTANT IMPROVE ABOVE VECTOR dEST IS USELSES
 
 })
 
 socket.on('hi',function(data){
-        clients[data.id]= new client(data.id,{x: data.position.x,y:data.position.y},'oman');
+        clients[data.id]= new client(data.id,{x: data.position.x,y:data.position.y},'oman',data.nick);
 });
 
 socket.on('death',function(data){
@@ -96,9 +106,10 @@ socket.on('logout',function(data){
     clients[data.id].remove();
 });
 
+// When someone new has connected, emit your data to him
 socket.on('new',function(data){
-    socket.emit('hi',{position: {x: player.raster.position.x,y:player.raster.position.y},to: data.id});
-    clients[data.id]= new client(data.id,new Point([500,500]),'oman');
+    socket.emit('hi',{position: {x: player.raster.position.x,y:player.raster.position.y},to: data.id,nick:nickname});
+    clients[data.id]= new client(data.id,new Point([500,500]),'oman',data.nick);
 });
 
 socket.on('move',function(data){
