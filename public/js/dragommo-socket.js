@@ -76,7 +76,45 @@ socket.on('bullet',function(data){
     //c/onsole.log(path.destination)
     path.key = data.id;
     path.vector = {x:path.destination.x/(totalSize/20),y:path.destination.y/(totalSize/20)};
-    bullets[bullets.length] = path;
+    
+    
+    
+            path.on('frame',function(){
+            
+            
+                this.position+=this.vector;
+
+                if(view.bounds.contains(this.position)){
+                    this.visible = true;
+                }else{
+                    this.visible = false;
+                }
+                
+               if(this.position.y>totalSize ||
+                  this.position.x>totalSize || 
+                  this.position.y<0 ||
+                  this.position.x<0 ){
+                    this.remove();
+                }else{
+                    var col = bulletCollision(this);
+                    if(col!=false){
+                        if(col==player.id){
+
+                        player.dmg();
+
+                      }else if(col!=true){
+                         clients[col].dmg();
+                      }
+
+                        this.remove();
+                       // bullets.splice(i, 1);
+                    }
+                }
+
+
+            });
+    
+    //bullets[bullets.length] = path;
     
 
     // VERY IMPORTANT IMPROVE ABOVE VECTOR dEST IS USELSES

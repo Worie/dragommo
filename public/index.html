@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Dragon MMO </title>
+	<script src="js/jquery-2.1.0.min.js"></script>
+	<link rel="StyleSheet" href="css/style.css" type="text/css">
+	<script>load = function(){
+		nickname = ($('#nickname').val()!=='' ? $('#nickname').val():'');
+		$( "#test" ).load( "game.html" );
+
+	}
+	
+	</script>
+    
+</head>
+<body>
+	<div id="test">
+		<form class='innerform' onsubmit ="load();return false;">
+			<input type="text"  id="nickname" placeholder="Nickname"/>
+			<input type='submit' value="Begin"/>
+		</form>
+	</div>
+	<script>
+	
+	</script>
+
+</body>
+</html>
+
+
+

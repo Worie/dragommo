@@ -34,38 +34,7 @@ onFrame = function onFrame(event) {
 if(!ready)
   return;
 
-	for(var i =0;i<bullets.length;i++){
-       // var tmp  = new Point([ bullets[i].destination.x/40, bullets[i].destination.y/40])
-        //bullets[i].position+=tmp;
-        var b = bullets[i];
-        b.position+=b.vector;
-
-      if(view.bounds.contains(b.position)){
-        b.visible = true;
-      }else{
-        b.visible = false;
-      }
-       if(b.position.y>totalSize || b.position.x>totalSize || b.position.y<0 || b.position.x<0 ){
-            b.remove();
-            bullets.splice(i, 1);
-        }else{
-            var col = bulletCollision(b);
-            if(col!=false){
-            	if(col==player.id){
-           
-                player.dmg();
-                
-              }else if(col!=true){
-            	 clients[col].dmg();
-              }
-
-            	b.remove();
-                bullets.splice(i, 1);
-        	}
-        }
-
-
-    } 
+	
 
 // consider removing clients bullet collision (dangerous to be honest)
     
